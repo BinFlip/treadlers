@@ -3,6 +3,7 @@ name = "treadlers"
 version = "0.1.0"
 authors = ["Johann Kempter <admin@binflip.rs>"]
 edition = "2021"
+rust-version = "1.85.0"
 description = "A Rust library for controlling Treadly treadmills via Bluetooth Low Energy"
 license = "Apache-2.0"
 repository = "https://github.com/binflip/treadlers"
