@@ -8,6 +8,11 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
 jobs:
   check-version:
     name: Check Version
@@ -80,7 +85,6 @@ jobs:
     needs: [check-version, pre-release-checks]
     if: needs.check-version.outputs.version-changed == 'true'
     outputs:
-      upload_url: ${{ steps.create_release.outputs.upload_url }}
       version: ${{ needs.check-version.outputs.version }}
     steps:
     - name: Checkout code
@@ -111,12 +115,12 @@ jobs:
         
     - name: Create GitHub Release
       id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ needs.check-version.outputs.version }}
-        release_name: Release v${{ needs.check-version.outputs.version }}
+        name: Release v${{ needs.check-version.outputs.version }}
         body_path: CHANGELOG.md
         draft: false
         prerelease: false
@@ -143,31 +147,4 @@ jobs:
       
     - name: Publish to crates.io
       run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
-      
-    - name: Create success comment
-      uses: actions/github-script@v7
-      with:
-        script: |
-          github.rest.repos.createCommitComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            commit_sha: context.sha,
-            body: '🎉 Successfully published v${{ needs.check-version.outputs.version }} to crates.io!'
-          })
 
-  notify-on-failure:
-    name: Notify on Failure
-    runs-on: ubuntu-latest
-    needs: [check-version, pre-release-checks, create-release, publish-crates]
-    if: failure() && needs.check-version.outputs.version-changed == 'true'
-    steps:
-    - name: Create failure comment
-      uses: actions/github-script@v7
-      with:
-        script: |
-          github.rest.repos.createCommitComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            commit_sha: context.sha,
-            body: '❌ Release v${{ needs.check-version.outputs.version }} failed. Please check the workflow logs.'
-          })
