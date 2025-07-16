@@ -227,6 +227,18 @@ impl TreadlyDevice {
     ///     Ok(())
     /// }
     /// ```
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if:
+    /// - No Treadly devices are found during scanning
+    /// - Device connection fails
+    /// - Authentication fails
+    /// 
+    /// # Panics
+    /// 
+    /// Panics if no devices are found after filtering (this should not happen
+    /// as we check for empty devices list first)
     pub async fn connect_first_with_params_and_timeout(
         params: ConnectionParams,
         timeout_config: TimeoutConfig,
@@ -246,6 +258,13 @@ impl TreadlyDevice {
     }
 
     /// Connect to a specific Treadly device
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if:
+    /// - Device connection fails
+    /// - Authentication fails
+    /// - BLE communication errors occur
     pub async fn connect_to_device(
         device_info: DeviceInfo,
         params: ConnectionParams,
@@ -254,6 +273,14 @@ impl TreadlyDevice {
     }
 
     /// Connect to a specific Treadly device with timeout configuration
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if:
+    /// - Device connection fails
+    /// - Authentication fails
+    /// - Timeout occurs during connection or authentication
+    /// - BLE communication errors occur
     pub async fn connect_to_device_with_timeout(
         device_info: DeviceInfo,
         params: ConnectionParams,
@@ -287,12 +314,14 @@ impl TreadlyDevice {
     }
 
     /// Get device information
-    pub fn device_info(&self) -> &DeviceInfo {
+    #[must_use]
+    pub const fn device_info(&self) -> &DeviceInfo {
         &self.device_info
     }
 
     /// Get timeout configuration
-    pub fn timeout_config(&self) -> &TimeoutConfig {
+    #[must_use]
+    pub const fn timeout_config(&self) -> &TimeoutConfig {
         &self.timeout_config
     }
 
@@ -308,7 +337,8 @@ impl TreadlyDevice {
     /// # Returns
     ///
     /// The appropriate timeout in milliseconds for the command
-    pub fn get_command_timeout(&self, message_id: MessageId) -> u64 {
+    #[must_use]
+    pub const fn get_command_timeout(&self, message_id: MessageId) -> u64 {
         match message_id {
             MessageId::Authenticate => self.timeout_config.auth_timeout_ms,
             MessageId::SecureAuthenticate | MessageId::SecureAuthenticateVerify => {
@@ -347,6 +377,13 @@ impl TreadlyDevice {
     }
 
     /// Authenticate with the device using basic authentication
+    /// 
+    /// # Errors
+    /// 
+    /// Returns an error if:
+    /// - Device communication fails
+    /// - Authentication is rejected by the device
+    /// - Timeout occurs during authentication
     pub async fn authenticate(&self) -> Result<()> {
         info!("Authenticating with device (basic authentication)");
 
@@ -419,7 +456,7 @@ impl TreadlyDevice {
         let challenge_data = &challenge_response.payload[0..16];
         info!("Received authentication challenge from device");
 
-        let hash_response = self.compute_md5_challenge_response(challenge_data).await?;
+        let hash_response = Self::compute_md5_challenge_response(challenge_data);
 
         let verify_message = Message::secure_authenticate_verify(hash_response);
         let verify_timeout = self.get_command_timeout(MessageId::SecureAuthenticateVerify);
@@ -427,8 +464,10 @@ impl TreadlyDevice {
             .send_command_with_response(verify_message, verify_timeout)
             .await?;
         if verify_response.status != crate::protocol::STATUS_SUCCESS {
-            let mut status = self.status.write().await;
-            status.authentication = AuthenticationStatus::Failed;
+            {
+                let mut status = self.status.write().await;
+                status.authentication = AuthenticationStatus::Failed;
+            }
             return Err(TreadlyError::AuthenticationFailed(format!(
                 "Secure authentication failed - device returned status: {:02X}",
                 verify_response.status
@@ -470,15 +509,15 @@ impl TreadlyDevice {
     /// This method currently does not return errors as MD5 computation is deterministic,
     /// but the return type is preserved for future extensibility and consistency
     /// with the authentication flow.
-    async fn compute_md5_challenge_response(&self, challenge_data: &[u8]) -> Result<[u8; 16]> {
+    fn compute_md5_challenge_response(challenge_data: &[u8]) -> [u8; 16] {
         let mut hasher = md5::Context::new();
         hasher.consume(challenge_data);
-        hasher.consume(&crate::protocol::AUTH_SECRET_KEY);
+        hasher.consume(crate::protocol::AUTH_SECRET_KEY);
         let result = hasher.finalize();
         let hash_bytes = result.0;
 
         info!("Computed MD5 challenge response");
-        Ok(hash_bytes)
+        hash_bytes
     }
 
     /// Attempt authentication with automatic fallback from secure to basic
@@ -543,8 +582,7 @@ impl TreadlyDevice {
                     Err(basic_err) => {
                         error!("Both secure and basic authentication failed");
                         Err(TreadlyError::AuthenticationFailed(format!(
-                            "Secure auth failed: {}, Basic auth failed: {}",
-                            e, basic_err
+                            "Secure auth failed: {e}, Basic auth failed: {basic_err}"
                         )))
                     }
                 }
@@ -766,10 +804,12 @@ impl TreadlyDevice {
                         {
                             info!("Emergency stop acknowledged by device");
 
-                            let mut local_status = self.status.write().await;
-                            local_status.emergency_stop = EmergencyStopState::Active;
-                            local_status.speed.current = 0.0;
-                            local_status.speed.target = 0.0;
+                            {
+                                let mut local_status = self.status.write().await;
+                                local_status.emergency_stop = EmergencyStopState::Active;
+                                local_status.speed.current = 0.0;
+                                local_status.speed.target = 0.0;
+                            }
 
                             return Ok(());
                         }
@@ -782,10 +822,12 @@ impl TreadlyDevice {
             Err(e) => {
                 error!("Emergency stop command failed: {}", e);
 
-                let mut status = self.status.write().await;
-                status.emergency_stop = EmergencyStopState::Active;
-                status.speed.current = 0.0;
-                status.speed.target = 0.0;
+                {
+                    let mut status = self.status.write().await;
+                    status.emergency_stop = EmergencyStopState::Active;
+                    status.speed.current = 0.0;
+                    status.speed.target = 0.0;
+                }
 
                 Err(e)
             }
@@ -1129,7 +1171,8 @@ impl TreadlyDevice {
     pub async fn disconnect(&self) -> Result<()> {
         info!("Disconnecting from device");
 
-        if let Some(conn) = self.connection.lock().await.take() {
+        let conn = self.connection.lock().await.take();
+        if let Some(conn) = conn {
             conn.disconnect().await?;
         }
 
@@ -1162,6 +1205,11 @@ impl TreadlyDevice {
     /// # Errors
     ///
     /// Returns the last error encountered after all retries are exhausted.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `last_error` is `None` when logging retry attempts. This should not happen
+    /// in normal operation as the error is set before the logging statement.
     pub async fn send_command_with_retry(
         &self,
         message: Message,
@@ -1190,7 +1238,7 @@ impl TreadlyDevice {
                             last_error.as_ref().unwrap()
                         );
 
-                        current_timeout = (current_timeout as f64 * 1.5) as u64;
+                        current_timeout = current_timeout.saturating_mul(3).saturating_div(2);
                         tokio::time::sleep(Duration::from_millis(
                             self.timeout_config.retry_delay_ms,
                         ))
@@ -1293,17 +1341,19 @@ impl TreadlyDevice {
             });
         }
 
-        let status = self.status.read().await;
-        match status.emergency_stop {
-            EmergencyStopState::Active => {
-                return Err(TreadlyError::EmergencyStop);
+        {
+            let status = self.status.read().await;
+            match status.emergency_stop {
+                EmergencyStopState::Active => {
+                    return Err(TreadlyError::EmergencyStop);
+                }
+                EmergencyStopState::ResetRequired => {
+                    return Err(TreadlyError::NotReady {
+                        reason: "Emergency stop reset required".to_string(),
+                    });
+                }
+                EmergencyStopState::Normal => {}
             }
-            EmergencyStopState::ResetRequired => {
-                return Err(TreadlyError::NotReady {
-                    reason: "Emergency stop reset required".to_string(),
-                });
-            }
-            _ => {}
         }
 
         Ok(())
@@ -1311,11 +1361,13 @@ impl TreadlyDevice {
 
     /// Ensure the device is powered on
     async fn ensure_powered_on(&self) -> Result<()> {
-        let status = self.status.read().await;
-        if !status.power_on {
-            return Err(TreadlyError::NotReady {
-                reason: "Device not powered on".to_string(),
-            });
+        {
+            let status = self.status.read().await;
+            if !status.power_on {
+                return Err(TreadlyError::NotReady {
+                    reason: "Device not powered on".to_string(),
+                });
+            }
         }
         Ok(())
     }
@@ -1324,7 +1376,7 @@ impl TreadlyDevice {
     ///
     /// This method implements the temperature safety system from the protocol:
     /// - Normal: No action required
-    /// - ReduceSpeed: Automatically reduce speed for safety
+    /// - `ReduceSpeed`: Automatically reduce speed for safety
     /// - Stop: Force emergency stop immediately
     /// - Unknown: Treat as error condition
     ///
@@ -1354,7 +1406,7 @@ impl TreadlyDevice {
     /// Automatically reduce speed due to high temperature (safety critical)
     ///
     /// This implements the automatic speed reduction safety response when
-    /// temperature status indicates ReduceSpeed condition.
+    /// temperature status indicates `ReduceSpeed` condition.
     ///
     /// # Errors
     ///
@@ -1386,8 +1438,7 @@ impl TreadlyDevice {
 
         if !(0.0..=20.0).contains(&speed_kmh) {
             return Err(TreadlyError::InvalidParameters(format!(
-                "Speed {:.1} km/h is outside safe range (0.0-20.0 km/h)",
-                speed_kmh
+                "Speed {speed_kmh:.1} km/h is outside safe range (0.0-20.0 km/h)"
             )));
         }
 
@@ -1401,14 +1452,14 @@ impl TreadlyDevice {
     /// Monitor device status codes and respond to safety conditions
     ///
     /// This monitors the device status codes and responds appropriately:
-    /// - HighTemperature: Log warning (temperature status handles action)
-    /// - PowerCycleRequired: Return error requiring user action
+    /// - `HighTemperature`: Log warning (temperature status handles action)
+    /// - `PowerCycleRequired`: Return error requiring user action
     /// - Other errors: Log for debugging
     ///
     /// # Errors
     ///
     /// Returns errors for safety-related device status conditions.
-    pub async fn monitor_device_status(&self, status: &DeviceStatus) -> Result<()> {
+    pub fn monitor_device_status(&self, status: &DeviceStatus) -> Result<()> {
         match status.device_status_code {
             DeviceStatusCode::HighTemperature => {
                 warn!("Device reporting high temperature status");
@@ -1448,7 +1499,7 @@ impl TreadlyDevice {
     pub async fn perform_safety_monitoring(&self, status: &DeviceStatus) -> Result<()> {
         self.monitor_temperature(status).await?;
 
-        self.monitor_device_status(status).await?;
+        self.monitor_device_status(status)?;
 
         self.monitor_connection_health().await?;
 
@@ -1505,8 +1556,10 @@ impl TreadlyDevice {
 
                 if !is_connected {
                     error!("Connection lost - triggering emergency stop for safety");
-                    let mut device_status = status.write().await;
-                    device_status.connection_health = crate::types::ConnectionHealth::Lost;
+                    {
+                        let mut device_status = status.write().await;
+                        device_status.connection_health = crate::types::ConnectionHealth::Lost;
+                    }
                     break;
                 }
 
@@ -1514,17 +1567,22 @@ impl TreadlyDevice {
                 if last_message.elapsed() > MESSAGE_TIMEOUT {
                     warn!("Message timeout detected - connection may be unstable");
 
-                    let mut device_status = status.write().await;
-                    device_status.connection_health = crate::types::ConnectionHealth::Unstable;
+                    {
+                        let mut device_status = status.write().await;
+                        device_status.connection_health = crate::types::ConnectionHealth::Unstable;
 
-                    if last_message.elapsed() > CONNECTION_TIMEOUT {
-                        error!("Connection timeout exceeded - triggering emergency stop");
-                        device_status.connection_health = crate::types::ConnectionHealth::Lost;
-                        break;
+                        if last_message.elapsed() > CONNECTION_TIMEOUT {
+                            error!("Connection timeout exceeded - triggering emergency stop");
+                            device_status.connection_health = crate::types::ConnectionHealth::Lost;
+                            drop(device_status);
+                            break;
+                        }
                     }
                 } else {
-                    let mut device_status = status.write().await;
-                    device_status.connection_health = crate::types::ConnectionHealth::Healthy;
+                    {
+                        let mut device_status = status.write().await;
+                        device_status.connection_health = crate::types::ConnectionHealth::Healthy;
+                    }
                 }
 
                 tokio::time::sleep(MONITOR_INTERVAL).await;
@@ -1607,12 +1665,11 @@ impl TreadlyDevice {
 
         if actual_mac.to_lowercase() != expected_mac.to_lowercase() {
             return Err(TreadlyError::AuthenticationFailed(format!(
-                "MAC address mismatch: expected {}, got {}",
-                expected_mac, actual_mac
+                "MAC address mismatch: expected {expected_mac}, got {actual_mac}"
             )));
         }
 
-        let mac_bytes = self.parse_mac_address(expected_mac)?;
+        let mac_bytes = Self::parse_mac_address(expected_mac)?;
         let message = Message::verify_mac_address(mac_bytes);
         let timeout = self.get_command_timeout(MessageId::VerifyMacAddress);
         let response = self.send_command_with_response(message, timeout).await?;
@@ -1637,19 +1694,18 @@ impl TreadlyDevice {
     /// # Errors
     ///
     /// Returns errors if MAC address format is invalid.
-    fn parse_mac_address(&self, mac_address: &str) -> Result<[u8; 6]> {
+    fn parse_mac_address(mac_address: &str) -> Result<[u8; 6]> {
         let parts: Vec<&str> = mac_address.split(':').collect();
         if parts.len() != 6 {
             return Err(TreadlyError::InvalidParameters(format!(
-                "Invalid MAC address format: {}. Expected format: XX:XX:XX:XX:XX:XX",
-                mac_address
+                "Invalid MAC address format: {mac_address}. Expected format: XX:XX:XX:XX:XX:XX"
             )));
         }
 
         let mut mac_bytes = [0u8; 6];
         for (i, part) in parts.iter().enumerate() {
             mac_bytes[i] = u8::from_str_radix(part, 16).map_err(|_| {
-                TreadlyError::InvalidParameters(format!("Invalid MAC address byte: {}", part))
+                TreadlyError::InvalidParameters(format!("Invalid MAC address byte: {part}"))
             })?;
         }
 
@@ -1706,8 +1762,7 @@ impl TreadlyDevice {
                 Ok(())
             }
             Err(e) => Err(TreadlyError::AuthenticationFailed(format!(
-                "Device validation failed - invalid device status response: {}",
-                e
+                "Device validation failed - invalid device status response: {e}"
             ))),
         }
     }
@@ -1761,6 +1816,7 @@ impl TreadlyDevice {
         let mut device_status = self.status.write().await;
         device_status.emergency_stop = EmergencyStopState::Active;
         device_status.connection_health = crate::types::ConnectionHealth::Lost;
+        drop(device_status);
 
         Err(TreadlyError::ConnectionLostEmergencyStop)
     }
@@ -1802,7 +1858,8 @@ impl Drop for TreadlyDevice {
         tokio::spawn(async move {
             *monitoring_active.write().await = false;
 
-            if let Some(conn) = connection.lock().await.take() {
+            let value = connection.lock().await.take();
+            if let Some(conn) = value {
                 let _ = conn.disconnect().await;
             }
         });
@@ -1859,15 +1916,13 @@ mod tests {
             if should_succeed {
                 assert!(
                     result.is_ok(),
-                    "MAC address parsing failed for: {}",
-                    mac_str
+                    "MAC address parsing failed for: {mac_str}"
                 );
                 assert_eq!(result.unwrap(), expected_bytes);
             } else {
                 assert!(
                     result.is_err(),
-                    "MAC address parsing should have failed for: {}",
-                    mac_str
+                    "MAC address parsing should have failed for: {mac_str}"
                 );
             }
         }
@@ -1885,8 +1940,7 @@ mod tests {
             let result = parse_mac_address_for_test(invalid_mac);
             assert!(
                 result.is_err(),
-                "MAC address parsing should have failed for: {}",
-                invalid_mac
+                "MAC address parsing should have failed for: {invalid_mac}"
             );
         }
     }
@@ -1895,15 +1949,14 @@ mod tests {
         let parts: Vec<&str> = mac_address.split(':').collect();
         if parts.len() != 6 {
             return Err(TreadlyError::InvalidParameters(format!(
-                "Invalid MAC address format: {}. Expected format: XX:XX:XX:XX:XX:XX",
-                mac_address
+                "Invalid MAC address format: {mac_address}. Expected format: XX:XX:XX:XX:XX:XX"
             )));
         }
 
         let mut mac_bytes = [0u8; 6];
         for (i, part) in parts.iter().enumerate() {
             mac_bytes[i] = u8::from_str_radix(part, 16).map_err(|_| {
-                TreadlyError::InvalidParameters(format!("Invalid MAC address byte: {}", part))
+                TreadlyError::InvalidParameters(format!("Invalid MAC address byte: {part}"))
             })?;
         }
 

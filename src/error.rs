@@ -109,29 +109,32 @@ pub type Result<T> = std::result::Result<T, TreadlyError>;
 
 impl TreadlyError {
     /// Check if this error indicates a connection issue
-    pub fn is_connection_error(&self) -> bool {
+    #[must_use]
+    pub const fn is_connection_error(&self) -> bool {
         matches!(
             self,
-            TreadlyError::Ble(_)
-                | TreadlyError::ConnectionFailed(_)
-                | TreadlyError::Disconnected
-                | TreadlyError::DeviceNotFound
+            Self::Ble(_)
+                | Self::ConnectionFailed(_)
+                | Self::Disconnected
+                | Self::DeviceNotFound
         )
     }
 
     /// Check if this error is recoverable
-    pub fn is_recoverable(&self) -> bool {
+    #[must_use]
+    pub const fn is_recoverable(&self) -> bool {
         matches!(
             self,
-            TreadlyError::Timeout { .. }
-                | TreadlyError::NotReady { .. }
-                | TreadlyError::InvalidParameters(_)
+            Self::Timeout { .. }
+                | Self::NotReady { .. }
+                | Self::InvalidParameters(_)
         )
     }
 
     /// Check if this error requires emergency stop reset
-    pub fn requires_reset(&self) -> bool {
-        matches!(self, TreadlyError::EmergencyStop)
+    #[must_use]
+    pub const fn requires_reset(&self) -> bool {
+        matches!(self, Self::EmergencyStop)
     }
 }
 

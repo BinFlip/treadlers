@@ -13,8 +13,8 @@ pub enum SpeedUnit {
 impl fmt::Display for SpeedUnit {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            SpeedUnit::Kilometers => write!(f, "km/h"),
-            SpeedUnit::Miles => write!(f, "mph"),
+            Self::Kilometers => write!(f, "km/h"),
+            Self::Miles => write!(f, "mph"),
         }
     }
 }
@@ -35,10 +35,10 @@ pub enum DeviceMode {
 impl From<u8> for DeviceMode {
     fn from(value: u8) -> Self {
         match value {
-            0 => DeviceMode::Awake,
-            1 => DeviceMode::Active,
-            2 => DeviceMode::Idle,
-            _ => DeviceMode::Unknown,
+            0 => Self::Awake,
+            1 => Self::Active,
+            2 => Self::Idle,
+            _ => Self::Unknown,
         }
     }
 }
@@ -46,10 +46,10 @@ impl From<u8> for DeviceMode {
 impl fmt::Display for DeviceMode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            DeviceMode::Awake => write!(f, "Awake"),
-            DeviceMode::Active => write!(f, "Active"),
-            DeviceMode::Idle => write!(f, "Idle"),
-            DeviceMode::Unknown => write!(f, "Unknown"),
+            Self::Awake => write!(f, "Awake"),
+            Self::Active => write!(f, "Active"),
+            Self::Idle => write!(f, "Idle"),
+            Self::Unknown => write!(f, "Unknown"),
         }
     }
 }
@@ -68,9 +68,9 @@ pub enum EmergencyStopState {
 impl fmt::Display for EmergencyStopState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            EmergencyStopState::Normal => write!(f, "Normal"),
-            EmergencyStopState::Active => write!(f, "Emergency Stop Active"),
-            EmergencyStopState::ResetRequired => write!(f, "Reset Required"),
+            Self::Normal => write!(f, "Normal"),
+            Self::Active => write!(f, "Emergency Stop Active"),
+            Self::ResetRequired => write!(f, "Reset Required"),
         }
     }
 }
@@ -104,10 +104,10 @@ pub enum TemperatureStatus {
 impl From<u8> for TemperatureStatus {
     fn from(value: u8) -> Self {
         match value {
-            0 => TemperatureStatus::Normal,
-            1 => TemperatureStatus::Stop,
-            2 => TemperatureStatus::ReduceSpeed,
-            _ => TemperatureStatus::Unknown,
+            0 => Self::Normal,
+            1 => Self::Stop,
+            2 => Self::ReduceSpeed,
+            _ => Self::Unknown,
         }
     }
 }
@@ -115,10 +115,10 @@ impl From<u8> for TemperatureStatus {
 impl fmt::Display for TemperatureStatus {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            TemperatureStatus::Normal => write!(f, "Normal"),
-            TemperatureStatus::Stop => write!(f, "Emergency Stop - Critical Temperature"),
-            TemperatureStatus::ReduceSpeed => write!(f, "Warning - High Temperature"),
-            TemperatureStatus::Unknown => write!(f, "Temperature Sensor Error"),
+            Self::Normal => write!(f, "Normal"),
+            Self::Stop => write!(f, "Emergency Stop - Critical Temperature"),
+            Self::ReduceSpeed => write!(f, "Warning - High Temperature"),
+            Self::Unknown => write!(f, "Temperature Sensor Error"),
         }
     }
 }
@@ -130,29 +130,28 @@ pub enum DeviceStatusCode {
     NoError = 0,
     /// High temperature detected - safety condition
     HighTemperature = 1,
-    /// WiFi scanning in progress
+    /// `WiFi` scanning in progress
     WifiScanning = 2,
     /// Device requires power cycle - safety condition
     PowerCycleRequired = 3,
     /// Request processing error
     RequestError = 4,
-    /// WiFi connection failed
+    /// `WiFi` connection failed
     WifiNotConnected = 5,
-    /// WiFi system error
+    /// `WiFi` system error
     WifiError = 6,
 }
 
 impl From<u8> for DeviceStatusCode {
     fn from(value: u8) -> Self {
         match value {
-            0 => DeviceStatusCode::NoError,
-            1 => DeviceStatusCode::HighTemperature,
-            2 => DeviceStatusCode::WifiScanning,
-            3 => DeviceStatusCode::PowerCycleRequired,
-            4 => DeviceStatusCode::RequestError,
-            5 => DeviceStatusCode::WifiNotConnected,
-            6 => DeviceStatusCode::WifiError,
-            _ => DeviceStatusCode::RequestError,
+            0 => Self::NoError,
+            1 => Self::HighTemperature,
+            2 => Self::WifiScanning,
+            3 => Self::PowerCycleRequired,
+            5 => Self::WifiNotConnected,
+            6 => Self::WifiError,
+            _ => Self::RequestError,
         }
     }
 }
@@ -160,13 +159,13 @@ impl From<u8> for DeviceStatusCode {
 impl fmt::Display for DeviceStatusCode {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            DeviceStatusCode::NoError => write!(f, "No Error"),
-            DeviceStatusCode::HighTemperature => write!(f, "High Temperature"),
-            DeviceStatusCode::WifiScanning => write!(f, "WiFi Scanning"),
-            DeviceStatusCode::PowerCycleRequired => write!(f, "Power Cycle Required"),
-            DeviceStatusCode::RequestError => write!(f, "Request Error"),
-            DeviceStatusCode::WifiNotConnected => write!(f, "WiFi Not Connected"),
-            DeviceStatusCode::WifiError => write!(f, "WiFi Error"),
+            Self::NoError => write!(f, "No Error"),
+            Self::HighTemperature => write!(f, "High Temperature"),
+            Self::WifiScanning => write!(f, "WiFi Scanning"),
+            Self::PowerCycleRequired => write!(f, "Power Cycle Required"),
+            Self::RequestError => write!(f, "Request Error"),
+            Self::WifiNotConnected => write!(f, "WiFi Not Connected"),
+            Self::WifiError => write!(f, "WiFi Error"),
         }
     }
 }
@@ -187,10 +186,10 @@ pub enum ConnectionHealth {
 impl fmt::Display for ConnectionHealth {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ConnectionHealth::Healthy => write!(f, "Healthy"),
-            ConnectionHealth::Degraded => write!(f, "Degraded"),
-            ConnectionHealth::Unstable => write!(f, "Unstable"),
-            ConnectionHealth::Lost => write!(f, "Lost"),
+            Self::Healthy => write!(f, "Healthy"),
+            Self::Degraded => write!(f, "Degraded"),
+            Self::Unstable => write!(f, "Unstable"),
+            Self::Lost => write!(f, "Lost"),
         }
     }
 }

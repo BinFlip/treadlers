@@ -142,56 +142,57 @@ pub enum MessageId {
 
 impl MessageId {
     /// Convert from u8
-    pub fn from_u8(value: u8) -> Option<Self> {
+    #[must_use]
+    pub const fn from_u8(value: u8) -> Option<Self> {
         match value {
-            0x01 => Some(MessageId::Power),
-            0x02 => Some(MessageId::SpeedUp),
-            0x03 => Some(MessageId::SpeedDown),
-            0x04 => Some(MessageId::Status),
-            0x08 => Some(MessageId::SetUnitKilometers),
-            0x09 => Some(MessageId::SetUnitMiles),
-            0x0A => Some(MessageId::SetSpeed),
-            0x0C => Some(MessageId::StatusEx),
-            0x10 => Some(MessageId::GetDeviceInfo),
-            0x11 => Some(MessageId::SubscribeStatus),
-            0x13 => Some(MessageId::Authenticate),
-            0x14 => Some(MessageId::AuthenticateVerify),
-            0x15 => Some(MessageId::SetAccelerateZoneStart),
-            0x16 => Some(MessageId::SetDecelerateZoneEnd),
-            0x17 => Some(MessageId::SetEmergHandrailEnabled),
-            0x18 => Some(MessageId::EmergencyStopRequest),
-            0x26 => Some(MessageId::SecureAuthenticate),
-            0x27 => Some(MessageId::SecureAuthenticateVerify),
-            0x33 => Some(MessageId::BroadcastDeviceStatus),
-            0x37 => Some(MessageId::ResetStop),
-            0x43 => Some(MessageId::GetBtAudioPassword),
-            0x44 => Some(MessageId::SetBtAudioPassword),
-            0x49 => Some(MessageId::UserInteractionStatus),
-            0x4A => Some(MessageId::UserInteractionSetEnable),
-            0x4E => Some(MessageId::SetGameMode),
-            0x51 => Some(MessageId::SetGameModeDisplay),
-            0x54 => Some(MessageId::StatusEx2),
-            0x55 => Some(MessageId::SetDeletePairedPhones),
-            0x20 => Some(MessageId::ValidateDevice),
-            0x0D => Some(MessageId::StatusDiagnostic),
-            0x2A => Some(MessageId::SetIrMode),
-            0x39 => Some(MessageId::DeviceDebugLog),
-            0x3A => Some(MessageId::DeviceIrDebugLog),
-            0x1E => Some(MessageId::BleEnableRequest),
-            0x19 => Some(MessageId::MaintenanceResetRequest),
-            0x1A => Some(MessageId::MaintenanceStepRequest),
-            0x0B => Some(MessageId::FactoryReset),
-            0x28 => Some(MessageId::TestStart),
-            0x25 => Some(MessageId::TestNotification),
-            0x4F => Some(MessageId::StartBleRemoteTest),
-            0x50 => Some(MessageId::BleRemoteTestResults),
-            0x42 => Some(MessageId::Pause),
-            0x36 => Some(MessageId::SetRemoteStatus),
-            0x35 => Some(MessageId::SetTotalStatus),
-            0x2B => Some(MessageId::MacAddress),
-            0x2C => Some(MessageId::VerifyMacAddress),
-            0x48 => Some(MessageId::UserInteractionSteps),
-            0x52 => Some(MessageId::UserInteractionHandrail),
+            0x01 => Some(Self::Power),
+            0x02 => Some(Self::SpeedUp),
+            0x03 => Some(Self::SpeedDown),
+            0x04 => Some(Self::Status),
+            0x08 => Some(Self::SetUnitKilometers),
+            0x09 => Some(Self::SetUnitMiles),
+            0x0A => Some(Self::SetSpeed),
+            0x0C => Some(Self::StatusEx),
+            0x10 => Some(Self::GetDeviceInfo),
+            0x11 => Some(Self::SubscribeStatus),
+            0x13 => Some(Self::Authenticate),
+            0x14 => Some(Self::AuthenticateVerify),
+            0x15 => Some(Self::SetAccelerateZoneStart),
+            0x16 => Some(Self::SetDecelerateZoneEnd),
+            0x17 => Some(Self::SetEmergHandrailEnabled),
+            0x18 => Some(Self::EmergencyStopRequest),
+            0x26 => Some(Self::SecureAuthenticate),
+            0x27 => Some(Self::SecureAuthenticateVerify),
+            0x33 => Some(Self::BroadcastDeviceStatus),
+            0x37 => Some(Self::ResetStop),
+            0x43 => Some(Self::GetBtAudioPassword),
+            0x44 => Some(Self::SetBtAudioPassword),
+            0x49 => Some(Self::UserInteractionStatus),
+            0x4A => Some(Self::UserInteractionSetEnable),
+            0x4E => Some(Self::SetGameMode),
+            0x51 => Some(Self::SetGameModeDisplay),
+            0x54 => Some(Self::StatusEx2),
+            0x55 => Some(Self::SetDeletePairedPhones),
+            0x20 => Some(Self::ValidateDevice),
+            0x0D => Some(Self::StatusDiagnostic),
+            0x2A => Some(Self::SetIrMode),
+            0x39 => Some(Self::DeviceDebugLog),
+            0x3A => Some(Self::DeviceIrDebugLog),
+            0x1E => Some(Self::BleEnableRequest),
+            0x19 => Some(Self::MaintenanceResetRequest),
+            0x1A => Some(Self::MaintenanceStepRequest),
+            0x0B => Some(Self::FactoryReset),
+            0x28 => Some(Self::TestStart),
+            0x25 => Some(Self::TestNotification),
+            0x4F => Some(Self::StartBleRemoteTest),
+            0x50 => Some(Self::BleRemoteTestResults),
+            0x42 => Some(Self::Pause),
+            0x36 => Some(Self::SetRemoteStatus),
+            0x35 => Some(Self::SetTotalStatus),
+            0x2B => Some(Self::MacAddress),
+            0x2C => Some(Self::VerifyMacAddress),
+            0x48 => Some(Self::UserInteractionSteps),
+            0x52 => Some(Self::UserInteractionHandrail),
             _ => None,
         }
     }
@@ -218,7 +219,7 @@ pub const STATUS_SUCCESS: u8 = 0x00;
 /// - Status/response code in byte 1  
 /// - 16-byte payload starting at byte 3
 /// - Little-endian encoding for numeric values
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Message {
     /// Message ID
     pub id: MessageId,
@@ -230,7 +231,8 @@ pub struct Message {
 
 impl Message {
     /// Create a new message
-    pub fn new(id: MessageId, payload: Vec<u8>) -> Self {
+    #[must_use]
+    pub const fn new(id: MessageId, payload: Vec<u8>) -> Self {
         Self {
             id,
             status: StatusCode::Request as u8,
@@ -239,19 +241,23 @@ impl Message {
     }
 
     /// Create a command message with empty payload
+    #[must_use]
     pub fn command(id: MessageId) -> Self {
         Self::new(id, vec![0; PAYLOAD_SIZE])
     }
 
     /// Create a speed command message
+    #[must_use]
     pub fn set_speed(speed: f32) -> Self {
         let mut payload = vec![0; PAYLOAD_SIZE];
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         let speed_bytes = (speed * 10.0) as u32;
         payload[0..4].copy_from_slice(&speed_bytes.to_le_bytes());
         Self::new(MessageId::SetSpeed, payload)
     }
 
     /// Create authentication message
+    #[must_use]
     pub fn authenticate() -> Self {
         let mut payload = vec![0; PAYLOAD_SIZE];
         payload[0..4].copy_from_slice(&AUTH_SECRET_KEY);
@@ -259,9 +265,10 @@ impl Message {
     }
 
     /// Create handrail enable/disable message
+    #[must_use]
     pub fn set_handrail_enabled(enabled: bool) -> Self {
         let mut payload = vec![0; PAYLOAD_SIZE];
-        payload[0] = if enabled { 1 } else { 0 };
+        payload[0] = u8::from(enabled);
         Self::new(MessageId::SetEmergHandrailEnabled, payload)
     }
 
@@ -273,6 +280,7 @@ impl Message {
     /// # Arguments
     ///
     /// * `hash_response` - 16-byte MD5 hash computed from challenge + secret key
+    #[must_use]
     pub fn secure_authenticate_verify(hash_response: [u8; 16]) -> Self {
         let mut payload = vec![0; PAYLOAD_SIZE];
         payload[0..16].copy_from_slice(&hash_response);
@@ -287,6 +295,7 @@ impl Message {
     /// # Arguments
     ///
     /// * `mac_bytes` - 6-byte MAC address to verify
+    #[must_use]
     pub fn verify_mac_address(mac_bytes: [u8; 6]) -> Self {
         let mut payload = vec![0; PAYLOAD_SIZE];
         payload[0..6].copy_from_slice(&mac_bytes);
@@ -294,6 +303,7 @@ impl Message {
     }
 
     /// Serialize message to bytes
+    #[must_use]
     pub fn to_bytes(&self) -> Bytes {
         let mut buf = BytesMut::with_capacity(MESSAGE_SIZE);
 
@@ -316,6 +326,10 @@ impl Message {
     }
 
     /// Parse message from bytes
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the data is too short or contains invalid message ID
     pub fn from_bytes(data: &[u8]) -> Result<Self> {
         if data.len() < MESSAGE_SIZE {
             return Err(TreadlyError::ParseError(format!(
@@ -362,6 +376,10 @@ impl Message {
 /// - Bytes 18-19: Temperature (u16 little-endian, divide by 10.0 for Celsius)
 /// - Byte 20: Temperature status code (0=Normal, 1=Stop, 2=ReduceSpeed, 3=Unknown)
 /// - Byte 21: Device status code (0=NoError, 1=HighTemperature, 2=WifiScanning, etc.)
+///
+/// # Errors
+///
+/// Returns an error if the message payload is too short or contains invalid data
 pub fn parse_device_status(message: &Message) -> Result<DeviceStatus> {
     if message.payload.len() < 13 {
         return Err(TreadlyError::ParseError(
@@ -371,7 +389,9 @@ pub fn parse_device_status(message: &Message) -> Result<DeviceStatus> {
 
     let mut buf = &message.payload[..];
 
+    #[allow(clippy::cast_precision_loss)]
     let current_speed = buf.get_u32_le() as f32 / 10.0;
+    #[allow(clippy::cast_precision_loss)]
     let target_speed = buf.get_u32_le() as f32 / 10.0;
 
     let mode_byte = buf.get_u8();
@@ -391,7 +411,10 @@ pub fn parse_device_status(message: &Message) -> Result<DeviceStatus> {
     let session_active = flags & 0x10 != 0;
 
     let distance = if buf.remaining() >= 4 {
-        buf.get_u32_le() as f32 / 100.0
+        #[allow(clippy::cast_precision_loss)]
+        {
+            buf.get_u32_le() as f32 / 100.0
+        }
     } else {
         0.0
     };
@@ -403,7 +426,7 @@ pub fn parse_device_status(message: &Message) -> Result<DeviceStatus> {
     };
 
     let temperature = if buf.remaining() >= 2 {
-        buf.get_u16_le() as f32 / 10.0
+        f32::from(buf.get_u16_le()) / 10.0
     } else {
         0.0
     };
