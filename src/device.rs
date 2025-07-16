@@ -840,7 +840,7 @@ impl TreadlyDevice {
     /// for device acknowledgment. Use this variant when immediate action is required
     /// and acknowledgment verification might be too slow for the safety situation.
     ///
-    /// Unlike [`emergency_stop`], this method does not wait for device confirmation
+    /// Unlike [`Self::emergency_stop`], this method does not wait for device confirmation
     /// and assumes the command was received. This provides the fastest possible
     /// emergency stop response time.
     ///
