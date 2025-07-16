@@ -227,16 +227,16 @@ impl TreadlyDevice {
     ///     Ok(())
     /// }
     /// ```
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if:
     /// - No Treadly devices are found during scanning
     /// - Device connection fails
     /// - Authentication fails
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if no devices are found after filtering (this should not happen
     /// as we check for empty devices list first)
     pub async fn connect_first_with_params_and_timeout(
@@ -258,9 +258,9 @@ impl TreadlyDevice {
     }
 
     /// Connect to a specific Treadly device
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if:
     /// - Device connection fails
     /// - Authentication fails
@@ -273,9 +273,9 @@ impl TreadlyDevice {
     }
 
     /// Connect to a specific Treadly device with timeout configuration
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if:
     /// - Device connection fails
     /// - Authentication fails
@@ -377,9 +377,9 @@ impl TreadlyDevice {
     }
 
     /// Authenticate with the device using basic authentication
-    /// 
+    ///
     /// # Errors
-    /// 
+    ///
     /// Returns an error if:
     /// - Device communication fails
     /// - Authentication is rejected by the device
@@ -1914,10 +1914,7 @@ mod tests {
         for (mac_str, should_succeed, expected_bytes) in test_cases {
             let result = parse_mac_address_for_test(mac_str);
             if should_succeed {
-                assert!(
-                    result.is_ok(),
-                    "MAC address parsing failed for: {mac_str}"
-                );
+                assert!(result.is_ok(), "MAC address parsing failed for: {mac_str}");
                 assert_eq!(result.unwrap(), expected_bytes);
             } else {
                 assert!(

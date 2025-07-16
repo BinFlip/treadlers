@@ -113,10 +113,7 @@ impl TreadlyError {
     pub const fn is_connection_error(&self) -> bool {
         matches!(
             self,
-            Self::Ble(_)
-                | Self::ConnectionFailed(_)
-                | Self::Disconnected
-                | Self::DeviceNotFound
+            Self::Ble(_) | Self::ConnectionFailed(_) | Self::Disconnected | Self::DeviceNotFound
         )
     }
 
@@ -125,9 +122,7 @@ impl TreadlyError {
     pub const fn is_recoverable(&self) -> bool {
         matches!(
             self,
-            Self::Timeout { .. }
-                | Self::NotReady { .. }
-                | Self::InvalidParameters(_)
+            Self::Timeout { .. } | Self::NotReady { .. } | Self::InvalidParameters(_)
         )
     }
 
