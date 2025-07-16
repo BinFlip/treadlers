@@ -4,7 +4,7 @@
 *.pdb
 
 # Cargo lock file for libraries (uncomment if this is an application)
-# Cargo.lock
+Cargo.lock
 
 # Build artifacts
 /debug/
