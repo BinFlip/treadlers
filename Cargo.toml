@@ -7,8 +7,8 @@ rust-version = "1.85.0"
 description = "A Rust library for controlling Treadly treadmills via Bluetooth Low Energy"
 license = "Apache-2.0"
 repository = "https://github.com/binflip/treadlers"
-keywords = ["bluetooth", "ble", "treadmill", "fitness", "iot", "treadly"]
-categories = ["hardware-support", "api-bindings"]
+keywords = ["bluetooth", "ble", "treadmill", "fitness", "treadly"]
+categories = ["api-bindings", "hardware-support"]
 
 [dependencies]
 btleplug = "0.11.8"
