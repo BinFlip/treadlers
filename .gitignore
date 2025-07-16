@@ -1,0 +1,148 @@
+# Rust generated files
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo lock file for libraries (uncomment if this is an application)
+# Cargo.lock
+
+# Build artifacts
+/debug/
+/release/
+build/
+dist/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Rust analyzer cache
+.rust-analyzer/
+
+# Documentation build
+/doc/
+
+# Test artifacts
+*.profraw
+*.profdata
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Log files
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+.org/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Coverage reports
+tarpaulin-report.html
+cobertura.xml
+lcov.info
+
+# Benchmarking
+criterion/
+
+# Flamegraph
+flamegraph.svg
+perf.data*
+
+# Security and sensitive files
+*.pem
+*.key
+*.cert
+*.crt
+secrets.txt
+.secrets/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Package manager files
+node_modules/
+package-lock.json
+yarn.lock
+
+# Python (if used for tooling)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Local development configuration
+.local/
+config/local.*
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# CI/CD
+.github/workflows/local.*
+
+# Generated documentation
+book/
+mdbook/
+
+# Rust-specific tools
+rust-toolchain.toml.bak

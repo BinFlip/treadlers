@@ -1,0 +1,42 @@
+[package]
+name = "treadlers"
+version = "0.1.0"
+authors = ["Johann Kempter <admin@binflip.rs>"]
+edition = "2021"
+description = "A Rust library for controlling Treadly treadmills via Bluetooth Low Energy"
+license = "Apache-2.0"
+repository = "https://github.com/binflip/treadlers"
+keywords = ["bluetooth", "ble", "treadmill", "fitness", "iot", "treadly"]
+categories = ["hardware-support", "api-bindings"]
+
+[dependencies]
+btleplug = "0.11.8"
+tokio = { version = "1.46.1", features = ["full"] }
+uuid = "1.17.0"
+thiserror = "2.0.12"
+tracing = "0.1.41"
+bytes = "1.10.1"
+serde = { version = "1.0.219", features = ["derive"] }
+async-trait = "0.1.88"
+futures = "0.3.31"
+md5 = "0.8.0"
+
+[dev-dependencies]
+tokio-test = "0.4.4"
+tracing-subscriber = "0.3.19"
+
+[features]
+default = ["tokio"]
+tokio = []
+
+[[example]]
+name = "basic_control"
+required-features = ["tokio"]
+
+[[example]]
+name = "status_monitor"
+required-features = ["tokio"]
+
+[[example]]
+name = "emergency_stop"
+required-features = ["tokio"]
