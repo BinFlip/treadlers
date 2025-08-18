@@ -13,7 +13,7 @@ categories = ["hardware-support", "api-bindings"]
 btleplug = "0.11.8"
 tokio = { version = "1.47.1", features = ["full"] }
 uuid = "1.17.0"
-thiserror = "2.0.12"
+thiserror = "2.0.15"
 tracing = "0.1.41"
 bytes = "1.10.1"
 serde = { version = "1.0.219", features = ["derive"] }
