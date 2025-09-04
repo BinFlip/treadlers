@@ -17,7 +17,7 @@ jobs:
       version-changed: ${{ steps.version.outputs.changed }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
         
@@ -41,7 +41,7 @@ jobs:
     if: needs.check-version.outputs.version-changed == 'true'
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
@@ -79,7 +79,7 @@ jobs:
       version: ${{ needs.check-version.outputs.version }}
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       with:
         fetch-depth: 0
         
@@ -123,7 +123,7 @@ jobs:
     if: needs.check-version.outputs.version-changed == 'true'
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
       
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
