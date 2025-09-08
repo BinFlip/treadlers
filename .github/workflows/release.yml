@@ -135,7 +135,7 @@ jobs:
       run: cargo publish --token ${{ secrets.CRATES_IO_TOKEN }}
       
     - name: Create success comment
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           github.rest.repos.createCommitComment({
@@ -152,7 +152,7 @@ jobs:
     if: failure() && needs.check-version.outputs.version-changed == 'true'
     steps:
     - name: Create failure comment
-      uses: actions/github-script@v7
+      uses: actions/github-script@v8
       with:
         script: |
           github.rest.repos.createCommitComment({
